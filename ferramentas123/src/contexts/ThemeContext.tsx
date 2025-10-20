@@ -24,6 +24,7 @@ interface ThemeContextType {
   theme: Theme;
   currentTheme: string;
   toggleTheme: () => void;
+  isBlackMode: boolean;
 }
 
 const themes: Record<string, Theme> = {
@@ -82,9 +83,10 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   };
 
   const theme = themes[currentTheme];
+  const isBlackMode = currentTheme === 'black';
 
   return (
-    <ThemeContext.Provider value={{ theme, currentTheme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, currentTheme, toggleTheme, isBlackMode }}>
       {children}
     </ThemeContext.Provider>
   );

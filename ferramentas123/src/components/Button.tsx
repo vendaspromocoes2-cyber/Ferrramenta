@@ -25,7 +25,7 @@ export const Button: React.FC<ButtonProps> = ({
       case 'primary':
         return theme.colors.primary;
       case 'danger':
-        return theme.colors.error;
+        return theme.colors.danger;
       case 'secondary':
         return theme.colors.surface;
       default:
