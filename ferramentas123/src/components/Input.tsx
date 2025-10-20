@@ -27,7 +27,7 @@ export const Input: React.FC<InputProps> = ({
     padding: '12px 16px',
     fontSize: '16px',
     borderRadius: '8px',
-    border: `2px solid ${error ? theme.colors.error : theme.colors.border}`,
+    border: `2px solid ${error ? theme.colors.danger : theme.colors.border}`,
     backgroundColor: theme.colors.surface,
     color: theme.colors.text,
     outline: 'none',
@@ -43,7 +43,7 @@ export const Input: React.FC<InputProps> = ({
   };
 
   const errorStyle: React.CSSProperties = {
-    color: theme.colors.error,
+    color: theme.colors.danger,
     fontSize: '12px',
     marginTop: '4px',
   };
@@ -62,7 +62,7 @@ export const Input: React.FC<InputProps> = ({
           e.currentTarget.style.borderColor = theme.colors.primary;
         }}
         onBlur={(e) => {
-          e.currentTarget.style.borderColor = error ? theme.colors.error : theme.colors.border;
+          e.currentTarget.style.borderColor = error ? theme.colors.danger : theme.colors.border;
         }}
       />
       {error && <div style={errorStyle}>{error}</div>}

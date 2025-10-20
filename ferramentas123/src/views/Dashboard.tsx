@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
+import { DownloadDemo } from '../components/DownloadDemo';
 
 export const Dashboard: React.FC = () => {
   const { theme, toggleTheme, isBlackMode } = useTheme();
   const { user, logout } = useAuth();
+  const [showDownloads, setShowDownloads] = useState(false);
 
   const containerStyle: React.CSSProperties = {
     minHeight: '100vh',
@@ -51,6 +53,7 @@ export const Dashboard: React.FC = () => {
     { id: 4, name: '💳 Pagamentos', description: 'Gestão financeira' },
     { id: 5, name: '⚙️ Configurações', description: 'Ajustes do sistema' },
     { id: 6, name: '📊 Relatórios', description: 'Análises e dashboards' },
+    { id: 7, name: '📥 Downloads', description: 'Baixar arquivos', action: () => setShowDownloads(!showDownloads) },
   ];
 
   return (
@@ -78,7 +81,7 @@ export const Dashboard: React.FC = () => {
           <Card
             key={module.id}
             title={module.name}
-            onClick={() => alert(`Módulo: ${module.name}\n(Em desenvolvimento)`)}
+            onClick={module.action || (() => alert(`Módulo: ${module.name}\n(Em desenvolvimento)`))}
           >
             <p style={{ color: theme.colors.textSecondary }}>
               {module.description}
@@ -86,6 +89,12 @@ export const Dashboard: React.FC = () => {
           </Card>
         ))}
       </div>
+
+      {showDownloads && (
+        <div style={{ marginTop: '40px', maxWidth: '1200px', margin: '40px auto 0' }}>
+          <DownloadDemo onClose={() => setShowDownloads(false)} />
+        </div>
+      )}
     </div>
   );
 };
