@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const StockReport = () => {
-  const [stockData, setStockData] = useState([]);
+const StockReport = ({ stockData, setStockData }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -19,8 +18,12 @@ const StockReport = () => {
       }
     };
 
-    fetchData();
-  }, []);
+    if (stockData.length === 0) {
+      fetchData();
+    } else {
+      setLoading(false);
+    }
+  }, [stockData, setStockData]);
 
   if (loading) {
     return <p>Carregando relatório de estoque...</p>;
