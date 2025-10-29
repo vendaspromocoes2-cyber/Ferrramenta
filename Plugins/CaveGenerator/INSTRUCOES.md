@@ -1,57 +1,56 @@
-# Como Integrar e Usar o Plugin CaveGenerator (Fase 4 - Sistema de Assets)
+# Como Integrar e Usar o Plugin CaveGenerator (Fase 5 - Refinamentos)
 
-Esta versão introduz o sistema de distribuição procedural de assets, que irá popular sua caverna com objetos como rochas, cristais e outros detalhes.
-
-## Instalação
-
-Se você já instalou as fases anteriores, apenas substitua os arquivos na pasta `Plugins/CaveGenerator` pelos novos e **recompile o projeto** no Visual Studio/Rider. Se for a primeira vez, siga os passos da Fase 1.
+Esta versão final introduz melhorias de qualidade de vida, visuais e de performance.
 
 ---
+## Refinamento 1: Geração no Editor (Botão "Generate")
 
-## Passo 4: Usando o Sistema de Distribuição de Assets
+Como usar o novo fluxo de trabalho:
 
-Abra o seu Blueprint `BP_CaveTunnel` e selecione o `Cave Generator Component`. No painel **Details**, abaixo das categorias existentes, você encontrará a nova categoria **`Assets`**.
-
-### 1. Preparando sua Pasta de Conteúdo
-
-1.  No seu **Content Browser**, crie uma nova pasta. Dê um nome claro, como `Props/CaveRocks`.
-2.  **Importe ou mova** todas as `Static Meshes` (malhas estáticas) que você quer que apareçam na sua caverna para dentro desta pasta. O sistema irá escanear esta pasta e usar todos os modelos que encontrar.
-
-### 2. Configurando os Parâmetros no Editor
-
-Na categoria `Assets` do componente, você encontrará as seguintes propriedades:
-
-*   **`Asset Folder` (Pasta de Assets):**
-    *   Este é o passo mais importante. Clique no ícone de pasta ou no menu dropdown e **selecione a pasta** que você criou no passo anterior (`Props/CaveRocks`).
-
-*   **`Asset Density` (Densidade de Assets):**
-    *   Controla **quantos** objetos serão colocados. O valor é uma aproximação de "objetos por metro quadrado".
-    *   `0.01` é um bom ponto de partida para objetos maiores como rochas.
-    *   `0.1` ou mais pode ser usado para detalhes menores como seixos.
-    *   **Comece com valores baixos** e aumente gradualmente para evitar criar milhares de objetos de uma vez.
-
-*   **`Scale Range` (Faixa de Escala):**
-    *   Controla a variação de tamanho dos objetos para que não pareçam todos iguais.
-    *   `X` é a escala mínima (ex: `0.8` para 80% do tamanho original).
-    *   `Y` é a escala máxima (ex: `1.5` para 150% do tamanho original).
-    *   Cada objeto terá uma escala uniforme aleatória escolhida entre esses dois valores.
-
-*   **`Z Offset` (Deslocamento Z):**
-    *   Permite ajustar a altura de cada objeto.
-    *   Um valor negativo (ex: `-10.0`) é muito útil para **enterrar um pouco a base** das rochas no chão, criando uma aparência mais natural.
-
-*   **`Random Seed` (Semente Aleatória):**
-    *   O número usado para inicializar o gerador de aleatoriedade.
-    *   Mudar este número irá gerar uma **distribuição completamente diferente** usando os mesmos parâmetros. Se você encontrar uma distribuição que goste, mantenha a mesma semente para que o resultado seja sempre o mesmo.
-
-## Passo 5: Gerar e Visualizar o Resultado
-
-1.  **Configure os Parâmetros:** Selecione sua pasta de assets, ajuste a densidade, escala e outros valores como desejar.
-2.  **Gere a Malha:** Clique em **Play** no editor (assumindo que o `Generate` está conectado ao `BeginPlay`).
-3.  **Visualize:** Sua caverna agora deve ser gerada, e **imediatamente após, os objetos da sua pasta aparecerão espalhados pelo chão** dos túneis e salas. Eles terão tamanhos e rotações variadas, criando uma cena muito mais rica e detalhada.
-
-Se você consegue gerar uma caverna populada com seus próprios modelos 3D, **a Fase 4 foi um sucesso!**
+1.  Selecione seu `BP_CaveTunnel` na cena.
+2.  No painel **Details**, na categoria **"Cave Generation|Actions"**, você verá um novo botão chamado **`Generate`**. Clique nele a qualquer momento para reconstruir a caverna com as configurações atuais.
+3.  **Ainda melhor:** A caverna agora se **regenera automaticamente** sempre que você altera qualquer propriedade no painel Details (como a `RuggednessAmount`, a escala de um asset, ou a posição de uma sala). Isso permite que você itere e projete sua caverna em tempo real, sem precisar iniciar o modo "Play".
 
 ---
+## Refinamento 2: Mapeamento de Textura Triplanar (UVs Melhorados)
 
-**Aguardando seu feedback e aprovação para prosseguir para a Fase 5: Refinamentos.**
+Para eliminar o estiramento de texturas, o plugin agora usa uma técnica de mapeamento triplanar. Isso requer um material especial. Siga estes passos para criá-lo:
+
+### 1. Crie um Novo Material
+
+1.  No **Content Browser**, clique com o botão direito e crie um novo **Material**. Chame-o de `M_CaveMaterial_Triplanar`.
+2.  Abra o material.
+
+### 2. Construa a Lógica Triplanar
+
+Você precisará construir a seguinte rede de nós. A ideia é projetar a mesma textura de três direções (X, Y, Z) e misturá-las com base na direção da superfície.
+
+1.  **Nó `WorldPosition`:** Adicione este nó. Ele nos dá a posição de cada pixel no mundo.
+2.  **Nó `VertexNormalWS`:** Adicione este nó. Ele nos dá a direção (normal) da superfície.
+3.  **Nós de Textura:**
+    *   Crie um nó `TextureSample` para sua textura de rocha (Albedo/Cor). Para torná-lo um parâmetro, clique com o botão direito nele e selecione **"Convert to Parameter"**. Dê um nome, como `Rock_Albedo`.
+    *   Faça o mesmo para a textura de Normal (`Rock_Normal`) e, se tiver, para a de Roughness (`Rock_Roughness`).
+4.  **Lógica de Projeção:**
+    *   **Projeção XY (Chão/Teto):**
+        *   Pegue o `WorldPosition`, use um nó `ComponentMask` para pegar apenas os canais **R e G (X e Y)**. Conecte isso ao pino `UVs` da sua `TextureSample`.
+    *   **Projeção XZ (Paredes Laterais):**
+        *   Pegue o `WorldPosition`, use um `ComponentMask` para pegar os canais **R e B (X e Z)**. Conecte isso ao `UVs` de uma *segunda* `TextureSample` (usando a mesma textura).
+    *   **Projeção YZ (Paredes Frontais/Traseiras):**
+        *   Pegue o `WorldPosition`, use um `ComponentMask` para pegar os canais **G e B (Y e Z)**. Conecte isso ao `UVs` de uma *terceira* `TextureSample`.
+5.  **Lógica de Mistura (Blend):**
+    *   Pegue o `VertexNormalWS`. Use um nó `Abs` (Absolute) para garantir que todos os valores sejam positivos.
+    *   Use um nó `Power` com o resultado do `Abs`. Um expoente alto (ex: `5` a `10`) cria uma transição mais nítida. Isso será nosso "Blend Mask".
+    *   Use o resultado do `Power` como `Alpha` em nós `LinearInterpolate` (Lerp) para misturar as três projeções de textura. Você precisará de dois Lerps:
+        *   O primeiro Lerp mistura a projeção XZ e YZ usando o canal **R** da máscara de blend.
+        *   O segundo Lerp mistura o resultado do primeiro Lerp com a projeção XY usando o canal **B** da máscara de blend.
+6.  **Conecte o Resultado:** Conecte o resultado final do Lerp ao pino `Base Color` do seu material. Repita a mesma lógica de Lerp para os mapas de Normal e Roughness.
+
+### 3. Use o Novo Material
+
+1.  Salve seu material `M_CaveMaterial_Triplanar`.
+2.  No seu `BP_CaveTunnel`, selecione o `Cave Generator Component`.
+3.  Na propriedade **`Tunnel Material`**, selecione o seu novo material triplanar.
+4.  Clique no botão **`Generate`**. A textura da sua caverna agora deve parecer uniforme, sem estiramentos e com uma escala consistente em todas as superfícies.
+
+---
+**Aguardando seu feedback final para a entrega do plugin completo.**
