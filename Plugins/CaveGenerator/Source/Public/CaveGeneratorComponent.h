@@ -11,6 +11,44 @@
 class USplineComponent;
 class UProceduralMeshComponent;
 
+// --- ESTRUTURAS DE DADOS PARA AS SALAS ---
+
+// Enum para definir os formatos de sala disponíveis.
+// 'BlueprintType' permite que seja usado em Blueprints.
+UENUM(BlueprintType)
+enum class ECaveRoomShape : uint8
+{
+    Circular,
+    Rectangular
+};
+
+// Estrutura que define um marcador de sala.
+// 'BlueprintType' permite que seja usado em Blueprints.
+USTRUCT(BlueprintType)
+struct FCaveRoomMarker
+{
+    GENERATED_BODY()
+
+    // A posição da sala ao longo da spline (0.0 = início, 1.0 = fim).
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Room Marker", meta = (ClampMin = "0.0", ClampMax = "1.0"))
+    float Position = 0.5f;
+
+    // O formato da sala.
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Room Marker")
+    ECaveRoomShape Shape = ECaveRoomShape::Circular;
+
+    // As dimensões da sala.
+    // Para Circular: X = Raio, Y = Altura.
+    // Para Retangular: X = Largura, Y = Comprimento, Z = Altura.
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Room Marker")
+    FVector Size = FVector(1000.0f, 1000.0f, 500.0f);
+
+    // Rotação adicional da sala em torno do seu próprio eixo.
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Room Marker")
+    FRotator Rotation = FRotator::ZeroRotator;
+};
+
+
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class CAVEGENERATOR_API UCaveGeneratorComponent : public USceneComponent
 {
@@ -20,47 +58,38 @@ public:
     UCaveGeneratorComponent();
 
     // --- PROPRIEDADES DE ENTRADA ---
-
-    // A Spline que define o caminho central do túnel.
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Cave Generation|Setup")
     USplineComponent* PathSpline;
 
-    // Uma CURVA que controla o raio do túnel ao longo do seu comprimento.
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cave Generation|Shape")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cave Generation|Tunnels")
     UCurveFloat* TunnelRadiusCurve;
 
-    // O número de lados do túnel.
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cave Generation|Shape", meta = (ClampMin = "3", ClampMax = "64"))
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cave Generation|Tunnels", meta = (ClampMin = "3", ClampMax = "64"))
     int32 TunnelSides = 12;
 
-    // --- NOVAS PROPRIEDADES DE RUGOSIDADE ---
-
-    // A força da deformação. Um valor de 0 significa sem deformação (um túnel liso).
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cave Generation|Ruggedness", meta = (ClampMin = "0.0"))
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cave Generation|Tunnels", meta = (ClampMin = "0.0"))
     float RuggednessAmount = 50.0f;
 
-    // A escala do ruído. Valores menores criam detalhes finos e irregulares.
-    // Valores maiores criam deformações mais suaves e amplas.
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cave Generation|Ruggedness", meta = (ClampMin = "0.01"))
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cave Generation|Tunnels", meta = (ClampMin = "0.01"))
     float RuggednessScale = 100.0f;
 
-    // O material a ser aplicado no túnel gerado.
+    // --- NOVA PROPRIEDADE PARA MARCADORES DE SALA ---
+    // Um array onde você pode definir todas as salas que quer gerar.
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cave Generation|Rooms")
+    TArray<FCaveRoomMarker> RoomMarkers;
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cave Generation|Visuals")
     UMaterialInterface* TunnelMaterial;
 
 
     // --- AÇÕES ---
-
-    // A função principal que gera a malha do túnel.
     UFUNCTION(BlueprintCallable, Category = "Cave Generation|Actions")
     void Generate();
 
 private:
-    // O componente que irá conter e renderizar nossa malha gerada proceduralmente.
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Cave Generation|Components", meta = (AllowPrivateAccess = "true"))
     UProceduralMeshComponent* ProceduralMesh;
 
 protected:
-    // Chamado quando o componente é inicializado.
     virtual void OnComponentCreated() override;
 };
