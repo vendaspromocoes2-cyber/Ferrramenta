@@ -12,7 +12,6 @@ public class CaveGenerator : ModuleRules
 			new string[]
 			{
 				"Core",
-				// ... add other public dependencies that you statically link with here ...
 			}
 			);
 
@@ -24,7 +23,8 @@ public class CaveGenerator : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
-                "ProceduralMeshComponent" // <-- ADICIONADO: Essencial para gerar malhas
+                "ProceduralMeshComponent",
+                "AssetRegistry" // <-- ADICIONADO: Módulo necessário para escanear assets
 			}
 			);
 
@@ -32,7 +32,6 @@ public class CaveGenerator : ModuleRules
 		DynamicallyLoadedModuleNames.AddRange(
 			new string[]
 			{
-				// ... add any modules that your module loads dynamically here ...
 			}
 			);
 	}

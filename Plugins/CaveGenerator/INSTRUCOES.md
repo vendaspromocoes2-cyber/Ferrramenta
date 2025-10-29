@@ -1,6 +1,6 @@
-# Como Integrar e Usar o Plugin CaveGenerator (Fase 3 - Sistema de Salas)
+# Como Integrar e Usar o Plugin CaveGenerator (Fase 4 - Sistema de Assets)
 
-Esta versão introduz o sistema de marcadores, permitindo que você crie salas de combate e outros pontos de interesse conectados aos túneis.
+Esta versão introduz o sistema de distribuição procedural de assets, que irá popular sua caverna com objetos como rochas, cristais e outros detalhes.
 
 ## Instalação
 
@@ -8,58 +8,50 @@ Se você já instalou as fases anteriores, apenas substitua os arquivos na pasta
 
 ---
 
-## Passo 4: Usando o Sistema de Marcadores de Sala
+## Passo 4: Usando o Sistema de Distribuição de Assets
 
-Abra o seu Blueprint `BP_CaveTunnel` e selecione o `Cave Generator Component`. No painel **Details**, abaixo da categoria `Tunnels`, você encontrará a nova categoria **`Rooms`**.
+Abra o seu Blueprint `BP_CaveTunnel` e selecione o `Cave Generator Component`. No painel **Details**, abaixo das categorias existentes, você encontrará a nova categoria **`Assets`**.
 
-### 1. Adicionando uma Sala
+### 1. Preparando sua Pasta de Conteúdo
 
-1.  Selecione a propriedade **`Room Markers`**.
-2.  Clique no ícone **"+"** para adicionar um novo elemento ao array. Cada elemento representa uma sala.
-3.  Expanda o novo elemento (ex: `[0]`) para ver suas propriedades.
+1.  No seu **Content Browser**, crie uma nova pasta. Dê um nome claro, como `Props/CaveRocks`.
+2.  **Importe ou mova** todas as `Static Meshes` (malhas estáticas) que você quer que apareçam na sua caverna para dentro desta pasta. O sistema irá escanear esta pasta e usar todos os modelos que encontrar.
 
-### 2. Configurando uma Sala
+### 2. Configurando os Parâmetros no Editor
 
-Cada marcador de sala (`Room Marker`) tem as seguintes propriedades:
+Na categoria `Assets` do componente, você encontrará as seguintes propriedades:
 
-*   **`Position` (Posição):**
-    *   Este é o valor mais importante. Ele define **onde** a sala aparecerá ao longo do túnel.
-    *   `0.0` é o início da spline.
-    *   `1.0` é o fim da spline.
-    *   Um valor de `0.5` posicionará a sala exatamente no meio do túnel.
+*   **`Asset Folder` (Pasta de Assets):**
+    *   Este é o passo mais importante. Clique no ícone de pasta ou no menu dropdown e **selecione a pasta** que você criou no passo anterior (`Props/CaveRocks`).
 
-*   **`Shape` (Formato):**
-    *   Um menu dropdown onde você pode escolher o formato da sala.
-    *   Atualmente, as opções são **`Circular`** e **`Rectangular`** (a implementação atual foca na circular, a retangular é visualmente similar por enquanto).
+*   **`Asset Density` (Densidade de Assets):**
+    *   Controla **quantos** objetos serão colocados. O valor é uma aproximação de "objetos por metro quadrado".
+    *   `0.01` é um bom ponto de partida para objetos maiores como rochas.
+    *   `0.1` ou mais pode ser usado para detalhes menores como seixos.
+    *   **Comece com valores baixos** e aumente gradualmente para evitar criar milhares de objetos de uma vez.
 
-*   **`Size` (Tamanho):**
-    *   Um vetor (X, Y, Z) que define as dimensões da sala. A interpretação depende do formato:
-        *   **Para `Circular`:**
-            *   `X`: Raio da sala.
-            *   `Y`: (Não utilizado atualmente).
-            *   `Z`: Altura da sala.
-        *   **Para `Rectangular`:**
-            *   `X`: Largura da sala.
-            *   `Y`: Comprimento da sala.
-            *   `Z`: Altura da sala.
-    *   **Importante:** O valor `X` do tamanho (`Raio` ou `Largura`) também influencia o tamanho da "abertura" no túnel.
+*   **`Scale Range` (Faixa de Escala):**
+    *   Controla a variação de tamanho dos objetos para que não pareçam todos iguais.
+    *   `X` é a escala mínima (ex: `0.8` para 80% do tamanho original).
+    *   `Y` é a escala máxima (ex: `1.5` para 150% do tamanho original).
+    *   Cada objeto terá uma escala uniforme aleatória escolhida entre esses dois valores.
 
-*   **`Rotation` (Rotação):**
-    *   Permite que você aplique uma rotação adicional à sala. Útil para orientar salas retangulares que não estejam perfeitamente alinhadas com o túnel.
+*   **`Z Offset` (Deslocamento Z):**
+    *   Permite ajustar a altura de cada objeto.
+    *   Um valor negativo (ex: `-10.0`) é muito útil para **enterrar um pouco a base** das rochas no chão, criando uma aparência mais natural.
 
-### 3. Criando Múltiplas Salas
-
-Você pode adicionar quantas salas quiser clicando no ícone **"+"** novamente. O sistema irá gerá-las e conectá-las ao túnel com base em suas respectivas posições.
+*   **`Random Seed` (Semente Aleatória):**
+    *   O número usado para inicializar o gerador de aleatoriedade.
+    *   Mudar este número irá gerar uma **distribuição completamente diferente** usando os mesmos parâmetros. Se você encontrar uma distribuição que goste, mantenha a mesma semente para que o resultado seja sempre o mesmo.
 
 ## Passo 5: Gerar e Visualizar o Resultado
 
-1.  **Configure seus Marcadores:** Adicione uma ou duas salas ao array `Room Markers`. Dê a elas posições diferentes (ex: `0.3` e `0.8`) e tamanhos variados.
-2.  **Desenhe sua Spline:** Certifique-se de que sua spline é longa o suficiente para acomodar as salas sem sobreposição.
-3.  **Gere a Malha:** Se você já conectou o evento `BeginPlay` à função `Generate`, basta clicar em **Play** no editor.
-4.  **Visualize:** O resultado agora deve ser um sistema de cavernas completo, com túneis de aparência orgânica que se abrem para salas maiores nas posições que você especificou. A transição entre o túnel e a sala deve ser uma malha contínua.
+1.  **Configure os Parâmetros:** Selecione sua pasta de assets, ajuste a densidade, escala e outros valores como desejar.
+2.  **Gere a Malha:** Clique em **Play** no editor (assumindo que o `Generate` está conectado ao `BeginPlay`).
+3.  **Visualize:** Sua caverna agora deve ser gerada, e **imediatamente após, os objetos da sua pasta aparecerão espalhados pelo chão** dos túneis e salas. Eles terão tamanhos e rotações variadas, criando uma cena muito mais rica e detalhada.
 
-Se você consegue criar e configurar salas que se conectam aos túneis, **a Fase 3 foi um sucesso!**
+Se você consegue gerar uma caverna populada com seus próprios modelos 3D, **a Fase 4 foi um sucesso!**
 
 ---
 
-**Aguardando seu feedback e aprovação para prosseguir para a Fase 4: Sistema de Assets.**
+**Aguardando seu feedback e aprovação para prosseguir para a Fase 5: Refinamentos.**
