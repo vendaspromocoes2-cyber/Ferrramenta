@@ -1,0 +1,6 @@
+{
+	"OutputFiles": [
+		"..\\..\\..\\x64\\UnrealGame\\Development\\CaveGenerator\\Module.CaveGenerator.cpp.obj",
+		"..\\..\\..\\x64\\UnrealGame\\Development\\CaveGenerator\\CaveGeneratorComponent.cpp.obj"
+	]
+}
